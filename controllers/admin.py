@@ -120,10 +120,10 @@ def agregarManual():
                 response.flash = "Ya existe un usuario con esa cédula"
 
     #######################
-    # Agregar coordinador de liceo manualmente
+    # Agregar representante de liceo manualmente
     #######################
 
-        elif request.vars.tipoUsuario == "coordinadorLiceo":
+        elif request.vars.tipoUsuario == "representanteLiceo":
             if (not(db(db.usuario.username == request.vars.cedula).select()) and not(db(db.representante_liceo.ci == request.vars.cedula).select())):
                 if db(db.liceo.nombre == request.vars.liceo).select():                # Verificamos que el liceo este en la base de datos
                     if re.match('^[0-9]{1,8}$', request.vars.cedula):
@@ -143,7 +143,7 @@ def agregarManual():
                                                       Apellido=request.vars.apellidos,
                                                       ci=request.vars.cedula,
                                                       nombre_liceo=request.vars.liceo) # Agregar el representante de liceo
-                        response.flash = "Coordinador del liceo agregado exitosamente"
+                        response.flash = "Representante del liceo agregado exitosamente"
                     else:
                         response.flash = "El formato de la cedula no es el correcto"
                 else:
@@ -152,10 +152,10 @@ def agregarManual():
                 response.flash = "Ya existe un usuario con esa cédula"
 
     #######################
-    # Agregar coordinador pio manualmente
+    # Agregar representante de sede manualmente
     #######################
 
-        elif request.vars.tipoUsuario == "coordinadorSede":
+        elif request.vars.tipoUsuario == "representanteSede":
             if (not(db(db.usuario.username == request.vars.cedula).select()) and not(db(db.representante_sede.ci == request.vars.cedula).select())):
                 if request.vars.sede=="Sartenejas" or request.vars.sede=="Litoral" or request.vars.sede=="Higuerote" or request.vars.sede=="Guarenas":
                     if re.match('^[0-9]{1,8}$', request.vars.cedula):
@@ -542,9 +542,6 @@ def enviarEmail():
 @auth.requires_membership('Administrador')
 @auth.requires_login()
 def modificarUsuario():
-    #############
-    # Modificar
-    ############
     modificando = None
     formularioModificar = None
     cedulaModificar = FORM()
@@ -557,6 +554,9 @@ def modificarUsuario():
             session.cedula = request.vars.ci
         elif db(db.representante_liceo.ci==request.vars.ci).select():
             session.tipo = "Representante de liceo"
+            session.cedula = request.vars.ci
+        elif db(db.profesor.ci==request.vars.ci).select():
+            session.tipo = "Profesor"
             session.cedula = request.vars.ci
         else:
             response.flash = 'No hay un usuario para esta cedula'
@@ -574,6 +574,10 @@ def modificarUsuario():
             if db(db.representante_liceo.ci==session.cedula).select():
                 modificando = [session.tipo, db(db.representante_liceo.ci==session.cedula).select()]
                 formularioModificar = SQLFORM(db.representante_liceo, modificando[1][0],showid=False)
+        elif session.tipo == "Profesor":
+            if db(db.profesor.ci==session.cedula).select():
+                modificando = [session.tipo, db(db.profesor.ci==session.cedula).select()]
+                formularioModificar = SQLFORM(db.profesor, modificando[1][0],showid=False)
 
         if formularioModificar:
             if formularioModificar.accepts(request.vars,formname='formularioModificar'):            # Procesamos el formulario
